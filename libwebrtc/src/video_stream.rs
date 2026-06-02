@@ -17,6 +17,10 @@ use crate::imp::video_stream as stream_imp;
 // There is no shared sink between native and web platforms.
 // Each platform requires different configuration (e.g: WebGlContext, ..)
 
+pub mod encoded {
+    pub use crate::native::encoded_video_stream::*;
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 pub mod native {
     use std::{

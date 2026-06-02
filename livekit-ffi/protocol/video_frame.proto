@@ -216,3 +216,79 @@ message OwnedVideoSource {
   required FfiOwnedHandle handle = 1;
   required VideoSourceInfo info = 2;
 }
+
+// --- Encoded Video Stream ---
+
+message NewEncodedVideoStreamRequest {
+  required uint64 track_handle = 1;
+  optional uint32 queue_size_frames = 2 [default = 1];
+  optional EncodedVideoStreamTapPosition tap_position = 3 [default = POST_DECRYPT];
+}
+
+message NewEncodedVideoStreamResponse {
+  required OwnedEncodedVideoStream stream = 1;
+}
+
+message OwnedEncodedVideoStream {
+  required FfiOwnedHandle handle = 1;
+  required EncodedVideoStreamInfo info = 2;
+}
+
+message EncodedVideoStreamInfo {
+  required VideoCodec codec = 1;
+  optional EncodedPayloadFormat payload_format = 2;
+}
+
+message EncodedVideoStreamEvent {
+  required uint64 stream_handle = 1;
+  oneof message {
+    EncodedVideoFrameReceived frame_received = 2;
+    EncodedVideoCodecConfigReceived codec_config = 3;
+    VideoStreamEOS eos = 4;
+  }
+}
+
+message EncodedVideoFrameReceived {
+  required OwnedEncodedVideoBuffer buffer = 1;
+  required VideoCodec codec = 2;
+  required EncodedPayloadFormat payload_format = 3;
+  required bool is_key_frame = 4;
+  required uint32 width = 5;
+  required uint32 height = 6;
+  required int64 timestamp_us = 7;
+  required uint32 rtp_timestamp = 8;
+  required VideoRotation rotation = 9;
+  optional int32 qp = 10;
+  optional FrameMetadata metadata = 11;
+}
+
+message EncodedVideoCodecConfigReceived {
+  required VideoCodec codec = 1;
+  optional string profile_level_id = 2;
+  optional bytes sps = 3;
+  optional bytes pps = 4;
+  required uint32 width = 5;
+  required uint32 height = 6;
+}
+
+message OwnedEncodedVideoBuffer {
+  required FfiOwnedHandle handle = 1;
+  required EncodedVideoBufferInfo info = 2;
+}
+
+message EncodedVideoBufferInfo {
+  required uint64 data_ptr = 1;
+  required uint32 size = 2;
+}
+
+enum EncodedPayloadFormat {
+  ENCODED_PAYLOAD_FORMAT_UNKNOWN = 0;
+  ENCODED_PAYLOAD_FORMAT_WEBRTC = 1;
+  ENCODED_PAYLOAD_FORMAT_H264_ANNEX_B = 2;
+  ENCODED_PAYLOAD_FORMAT_H264_AVCC = 3;
+}
+
+enum EncodedVideoStreamTapPosition {
+  POST_DECRYPT = 0;
+  PRE_DECRYPT = 1;
+}

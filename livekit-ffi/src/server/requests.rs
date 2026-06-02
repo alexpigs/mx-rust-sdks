@@ -481,6 +481,17 @@ fn on_get_stats(
 }
 
 /// Create a new VideoStream, a video stream is used to receive frames from a Track
+fn on_new_encoded_video_stream(
+    server: &'static FfiServer,
+    request: proto::NewEncodedVideoStreamRequest,
+) -> FfiResult<proto::NewEncodedVideoStreamResponse> {
+    let stream_info =
+        super::encoded_video_stream::FfiEncodedVideoStream::from_track(server, request)?;
+    Ok(proto::NewEncodedVideoStreamResponse {
+        stream: stream_info,
+    })
+}
+
 fn on_new_video_stream(
     server: &'static FfiServer,
     new_stream: proto::NewVideoStreamRequest,
@@ -1333,6 +1344,9 @@ pub fn handle_request(
         Request::LocalTrackMute(req) => on_local_track_mute(server, req)?.into(),
         Request::EnableRemoteTrack(req) => on_enable_remote_track(server, req)?.into(),
         Request::GetStats(req) => on_get_stats(server, req)?.into(),
+        Request::NewEncodedVideoStream(req) => {
+            on_new_encoded_video_stream(server, req)?.into()
+        }
         Request::NewVideoStream(req) => on_new_video_stream(server, req)?.into(),
         Request::VideoStreamFromParticipant(req) => {
             on_video_stream_from_participant(server, req)?.into()

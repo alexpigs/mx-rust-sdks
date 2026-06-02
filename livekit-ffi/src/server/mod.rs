@@ -47,6 +47,7 @@ pub mod resampler;
 pub mod room;
 mod utils;
 pub mod video_source;
+pub mod encoded_video_stream;
 pub mod video_stream;
 
 //#[cfg(test)]

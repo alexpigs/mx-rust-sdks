@@ -178,7 +178,9 @@ message FfiRequest {
     // Room event ready signal
     ReadyForRoomEventRequest ready_for_room_event = 83;
 
-    // NEXT_ID: 84
+    NewEncodedVideoStreamRequest new_encoded_video_stream = 84;
+
+    // NEXT_ID: 85
   }
 }
 
@@ -302,7 +304,9 @@ message FfiResponse {
     // Room event ready signal
     ReadyForRoomEventResponse ready_for_room_event = 82;
 
-    // NEXT_ID: 83
+    NewEncodedVideoStreamResponse new_encoded_video_stream = 83;
+
+    // NEXT_ID: 84
   }
 }
 
@@ -367,7 +371,9 @@ message FfiEvent {
 
     SimulateScenarioCallback simulate_scenario = 44;
 
-    // NEXT_ID: 45
+    EncodedVideoStreamEvent encoded_video_stream_event = 45;
+
+    // NEXT_ID: 46
   }
 }
 

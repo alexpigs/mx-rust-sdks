@@ -21,6 +21,7 @@
 #include "absl/types/optional.h"
 #include "api/make_ref_counted.h"
 #include "livekit/peer_connection.h"
+#include "livekit/receiver_transformer_chain.h"
 #include "livekit/peer_connection_factory.h"
 #include "livekit/packet_trailer.h"
 #include "livekit/webrtc.h"
@@ -29,53 +30,6 @@
 
 namespace livekit_ffi {
 
-class ChainedFrameTransformer : public webrtc::FrameTransformerInterface,
-                                public webrtc::TransformedFrameCallback {
- public:
-  ChainedFrameTransformer(
-      webrtc::scoped_refptr<webrtc::FrameTransformerInterface> first,
-      webrtc::scoped_refptr<webrtc::FrameTransformerInterface> second)
-      : first_(std::move(first)), second_(std::move(second)) {}
-
-  void Transform(
-      std::unique_ptr<webrtc::TransformableFrameInterface> frame) override {
-    first_->Transform(std::move(frame));
-  }
-
-  void RegisterTransformedFrameCallback(
-      webrtc::scoped_refptr<webrtc::TransformedFrameCallback> callback) override {
-    second_->RegisterTransformedFrameCallback(callback);
-    first_->RegisterTransformedFrameCallback(
-        webrtc::scoped_refptr<webrtc::TransformedFrameCallback>(this));
-  }
-
-  void RegisterTransformedFrameSinkCallback(
-      webrtc::scoped_refptr<webrtc::TransformedFrameCallback> callback,
-      uint32_t ssrc) override {
-    second_->RegisterTransformedFrameSinkCallback(callback, ssrc);
-    first_->RegisterTransformedFrameSinkCallback(
-        webrtc::scoped_refptr<webrtc::TransformedFrameCallback>(this), ssrc);
-  }
-
-  void UnregisterTransformedFrameCallback() override {
-    first_->UnregisterTransformedFrameCallback();
-    second_->UnregisterTransformedFrameCallback();
-  }
-
-  void UnregisterTransformedFrameSinkCallback(uint32_t ssrc) override {
-    first_->UnregisterTransformedFrameSinkCallback(ssrc);
-    second_->UnregisterTransformedFrameSinkCallback(ssrc);
-  }
-
-  void OnTransformedFrame(
-      std::unique_ptr<webrtc::TransformableFrameInterface> frame) override {
-    second_->Transform(std::move(frame));
-  }
-
- private:
-  webrtc::scoped_refptr<webrtc::FrameTransformerInterface> first_;
-  webrtc::scoped_refptr<webrtc::FrameTransformerInterface> second_;
-};
 
 webrtc::FrameCryptorTransformer::Algorithm AlgorithmToFrameCryptorAlgorithm(
     Algorithm algorithm) {
@@ -196,26 +150,29 @@ void FrameCryptor::set_packet_trailer_handler(
     return;
   }
 
-  webrtc::scoped_refptr<webrtc::FrameTransformerInterface> first;
-  webrtc::scoped_refptr<webrtc::FrameTransformerInterface> second;
-  if (sender_) {
-    first = e2ee_transformer_;
-    second = timestamp_transformer;
-  } else if (receiver_) {
-    first = timestamp_transformer;
-    second = e2ee_transformer_;
-  } else {
-    return;
-  }
+  // Create a ReceiverTransformerChain to compose the transformers
+  auto chain = webrtc::make_ref_counted<ReceiverTransformerChain>();
 
-  chained_transformer_ =
-      webrtc::make_ref_counted<ChainedFrameTransformer>(first, second);
-
-  if (sender_) {
-    sender_->SetEncoderToPacketizerFrameTransformer(chained_transformer_);
-  }
   if (receiver_) {
-    receiver_->SetDepacketizerToDecoderFrameTransformer(chained_transformer_);
+    // Receiver: PacketTrailer runs first, then FrameCryptor
+    chain->AddTransformer(
+        ReceiverTransformerChain::Priority::kPacketTrailer,
+        timestamp_transformer);
+    chain->AddTransformer(
+        ReceiverTransformerChain::Priority::kFrameCryptor,
+        e2ee_transformer_);
+    chain->RegisterTransformedFrameCallback(nullptr);  // WebRTC decoder follows
+    receiver_->SetDepacketizerToDecoderFrameTransformer(chain);
+  } else if (sender_) {
+    // Sender: FrameCryptor runs first, then PacketTrailer
+    chain->AddTransformer(
+        ReceiverTransformerChain::Priority::kFrameCryptor,
+        e2ee_transformer_);
+    chain->AddTransformer(
+        ReceiverTransformerChain::Priority::kPacketTrailer,
+        timestamp_transformer);
+    chain->RegisterTransformedFrameCallback(nullptr);  // WebRTC encoder follows
+    sender_->SetEncoderToPacketizerFrameTransformer(chain);
   }
 }
 

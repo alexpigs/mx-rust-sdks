@@ -120,7 +120,7 @@ impl RemoteVideoTrack {
         self.inner.events.lock().unmuted.replace(Box::new(f));
     }
 
-    pub(crate) fn transceiver(&self) -> Option<RtpTransceiver> {
+    pub fn transceiver(&self) -> Option<RtpTransceiver> {
         self.inner.info.read().transceiver.clone()
     }
 

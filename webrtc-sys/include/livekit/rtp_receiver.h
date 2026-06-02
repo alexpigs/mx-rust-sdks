@@ -29,6 +29,8 @@
 
 namespace livekit_ffi {
 class RtpReceiver;
+class EncodedFrameTapTransformer;
+class NativeEncodedFrameSink;
 }
 #include "webrtc-sys/src/rtp_receiver.rs.h"
 namespace livekit_ffi {
@@ -61,6 +63,15 @@ class RtpReceiver {
 
   void set_jitter_buffer_minimum_delay(bool is_some,
                                        double delay_seconds) const;
+
+  /// Install a FrameTransformer chain on the depacketizer-to-decoder path.
+  void SetDepacketizerToDecoderFrameTransformer(
+      webrtc::scoped_refptr<webrtc::FrameTransformerInterface> transformer) const;
+
+  /// Install an EncodedFrameTapTransformer in a new chain on this receiver.
+  /// Returns the tap so it can be cleaned up later.
+  void InstallEncodedTap(
+      const std::shared_ptr<NativeEncodedFrameSink>& sink) const;
 
   webrtc::scoped_refptr<webrtc::RtpReceiverInterface> rtc_receiver() const {
     return receiver_;

@@ -14,6 +14,7 @@
 
 pub use crate::{
     audio_frame::AudioFrame,
+    encoded_video_frame::{EncodedPayloadFormat, EncodedVideoCodecConfig, EncodedVideoFrame, VideoCodecType},
     audio_source::{AudioSourceOptions, RtcAudioSource},
     audio_track::RtcAudioTrack,
     data_channel::{DataBuffer, DataChannel, DataChannelError, DataChannelInit, DataChannelState},

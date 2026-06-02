@@ -34,8 +34,15 @@ pub mod ffi {
 
     unsafe extern "C++" {
         include!("livekit/rtp_receiver.h");
+        include!("livekit/encoded_frame_tap.h");
 
         type RtpReceiver;
+        type NativeEncodedFrameSink = crate::encoded_frame_tap::ffi::NativeEncodedFrameSink;
+
+        fn InstallEncodedTap(
+            self: &RtpReceiver,
+            sink: &SharedPtr<NativeEncodedFrameSink>,
+        );
 
         fn track(self: &RtpReceiver) -> SharedPtr<MediaStreamTrack>;
         fn get_stats(
@@ -61,3 +68,4 @@ pub mod ffi {
 pub struct ReceiverContext(pub Box<dyn Any + Send>);
 
 impl_thread_safety!(ffi::RtpReceiver, Send + Sync);
+

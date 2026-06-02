@@ -15,6 +15,8 @@
  */
 
 #include "livekit/rtp_receiver.h"
+#include "livekit/encoded_frame_tap.h"
+#include "livekit/receiver_transformer_chain.h"
 #include "livekit/jsep.h"
 
 #include <memory>
@@ -76,6 +78,26 @@ void RtpReceiver::set_jitter_buffer_minimum_delay(bool is_some,
                                                   double delay_seconds) const {
   receiver_->SetJitterBufferMinimumDelay(
       is_some ? absl::make_optional(delay_seconds) : absl::nullopt);
+}
+
+void RtpReceiver::SetDepacketizerToDecoderFrameTransformer(
+    webrtc::scoped_refptr<webrtc::FrameTransformerInterface> transformer) const {
+  receiver_->SetDepacketizerToDecoderFrameTransformer(std::move(transformer));
+}
+
+void RtpReceiver::InstallEncodedTap(
+    const std::shared_ptr<NativeEncodedFrameSink>& sink) const {
+  auto chain = webrtc::make_ref_counted<ReceiverTransformerChain>();
+  auto tap = webrtc::make_ref_counted<EncodedFrameTapTransformer>();
+  tap->AddSink(sink);
+  chain->AddTransformer(
+      ReceiverTransformerChain::Priority::kEncodedTapPostDecrypt, tap);
+  chain->RegisterTransformedFrameCallback(nullptr);  // WebRTC decoder follows
+
+  // Note: this overwrites any existing transformer chain on the receiver.
+  // For proper coexistence with E2EE/packet trailer, the shared
+  // ReceiverTransformerChain approach should be used (see Task 3/4).
+  receiver_->SetDepacketizerToDecoderFrameTransformer(chain);
 }
 
 }  // namespace livekit_ffi

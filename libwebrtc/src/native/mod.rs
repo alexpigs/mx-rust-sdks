@@ -37,6 +37,7 @@ pub mod rtp_transceiver;
 pub mod session_description;
 pub mod video_frame;
 pub mod video_source;
+pub mod encoded_video_stream;
 pub mod video_stream;
 pub mod video_track;
 pub mod yuv_helper;

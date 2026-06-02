@@ -25,6 +25,10 @@ pub struct RtpReceiver {
 }
 
 impl RtpReceiver {
+    pub fn sys_handle(&self) -> cxx::SharedPtr<webrtc_sys::rtp_receiver::ffi::RtpReceiver> {
+        self.handle.sys_handle()
+    }
+
     pub fn track(&self) -> Option<MediaStreamTrack> {
         self.handle.track()
     }

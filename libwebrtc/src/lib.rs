@@ -61,6 +61,7 @@ pub mod rtp_sender;
 pub mod rtp_transceiver;
 pub mod session_description;
 pub mod stats;
+pub mod encoded_video_frame;
 pub mod video_frame;
 pub mod video_source;
 pub mod video_stream;
@@ -71,7 +72,8 @@ pub mod native {
     pub use webrtc_sys::webrtc::ffi::create_random_uuid;
 
     pub use crate::imp::{
-        apm, audio_mixer, audio_resampler, frame_cryptor, packet_trailer, yuv_helper,
+        apm, audio_mixer, audio_resampler, encoded_video_stream, frame_cryptor, packet_trailer,
+        yuv_helper,
     };
 }
 

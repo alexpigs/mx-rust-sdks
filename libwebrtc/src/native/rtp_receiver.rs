@@ -27,6 +27,10 @@ pub struct RtpReceiver {
 }
 
 impl RtpReceiver {
+    pub fn sys_handle(&self) -> SharedPtr<sys_rr::ffi::RtpReceiver> {
+        self.sys_handle.clone()
+    }
+
     pub fn track(&self) -> Option<MediaStreamTrack> {
         let track_handle = self.sys_handle.track();
         if track_handle.is_null() {

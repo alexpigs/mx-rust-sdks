@@ -21,6 +21,7 @@
 
 #include "api/make_ref_counted.h"
 #include "livekit/peer_connection_factory.h"
+#include "livekit/receiver_transformer_chain.h"
 #include "livekit/rtp_receiver.h"
 #include "livekit/rtp_sender.h"
 #include "rtc_base/logging.h"
@@ -404,7 +405,13 @@ PacketTrailerHandler::PacketTrailerHandler(
     : rtc_runtime_(rtc_runtime), sender_(sender) {
   transformer_ = webrtc::make_ref_counted<PacketTrailerTransformer>(
       PacketTrailerTransformer::Direction::kSend);
-  sender->SetEncoderToPacketizerFrameTransformer(transformer_);
+
+  auto chain = webrtc::make_ref_counted<ReceiverTransformerChain>();
+  chain->AddTransformer(
+      ReceiverTransformerChain::Priority::kPacketTrailer,
+      transformer_);
+  chain->RegisterTransformedFrameCallback(nullptr);  // WebRTC encoder follows
+  sender->SetEncoderToPacketizerFrameTransformer(chain);
 }
 
 PacketTrailerHandler::PacketTrailerHandler(
@@ -413,7 +420,13 @@ PacketTrailerHandler::PacketTrailerHandler(
     : rtc_runtime_(rtc_runtime), receiver_(receiver) {
   transformer_ = webrtc::make_ref_counted<PacketTrailerTransformer>(
       PacketTrailerTransformer::Direction::kReceive);
-  receiver->SetDepacketizerToDecoderFrameTransformer(transformer_);
+
+  auto chain = webrtc::make_ref_counted<ReceiverTransformerChain>();
+  chain->AddTransformer(
+      ReceiverTransformerChain::Priority::kPacketTrailer,
+      transformer_);
+  chain->RegisterTransformedFrameCallback(nullptr);  // WebRTC decoder follows
+  receiver->SetDepacketizerToDecoderFrameTransformer(chain);
 }
 
 void PacketTrailerHandler::set_enabled(bool enabled) const {
