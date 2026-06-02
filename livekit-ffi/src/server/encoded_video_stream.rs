@@ -160,6 +160,10 @@ impl FfiEncodedVideoStream {
                         frame.timestamp_us
                     );
 
+                    // Get pointer/size before moving data into the handle
+                    let data_ptr = frame.data.as_ptr() as u64;
+                    let data_len = frame.data.len() as u32;
+
                     let buffer_id = server.next_id();
                     let buffer = EncodedVideoBufferHandle {
                         data: frame.data,
@@ -169,8 +173,8 @@ impl FfiEncodedVideoStream {
                     let owned_buffer = proto::OwnedEncodedVideoBuffer {
                         handle: proto::FfiOwnedHandle { id: buffer_id },
                         info: proto::EncodedVideoBufferInfo {
-                            data_ptr: 0,
-                            size: 0,
+                            data_ptr,
+                            size: data_len,
                         },
                     };
 
