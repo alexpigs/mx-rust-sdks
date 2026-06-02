@@ -150,16 +150,6 @@ impl FfiEncodedVideoStream {
                         break;
                     };
 
-                    eprintln!(
-                        "[ffi-encoded] frame codec={:?} key={} bytes={} {}x{} ts={}",
-                        frame.codec,
-                        frame.is_key_frame,
-                        frame.data.len(),
-                        frame.width,
-                        frame.height,
-                        frame.timestamp_us
-                    );
-
                     // Get pointer/size before moving data into the handle
                     let data_ptr = frame.data.as_ptr() as u64;
                     let data_len = frame.data.len() as u32;

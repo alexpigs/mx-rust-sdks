@@ -152,14 +152,6 @@ impl FfiVideoStream {
                         break;
                     };
 
-                    eprintln!(
-                        "[ffi-video] native frame {}x{} rotation={:?} ts={}",
-                        frame.buffer.width(),
-                        frame.buffer.height(),
-                        frame.rotation,
-                        frame.timestamp_us
-                    );
-
                     let metadata = frame_metadata_to_proto(frame.frame_metadata);
                     let timestamp_us = frame.timestamp_us;
                     let rotation = proto::VideoRotation::from(frame.rotation).into();
