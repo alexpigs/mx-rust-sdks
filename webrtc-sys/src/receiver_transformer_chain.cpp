@@ -74,11 +74,10 @@ void ReceiverTransformerChain::RegisterTransformedFrameSinkCallback(
     webrtc::scoped_refptr<webrtc::TransformedFrameCallback> callback,
     uint32_t ssrc) {
   webrtc::MutexLock lock(&mutex_);
-  if (transformers_.empty()) {
-    output_callback_ = std::move(callback);
-    return;
+  output_callback_ = std::move(callback);
+  if (!transformers_.empty()) {
+    RebuildChain();
   }
-  RebuildChain();
 }
 
 void ReceiverTransformerChain::UnregisterTransformedFrameCallback() {

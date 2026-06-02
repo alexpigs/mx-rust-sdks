@@ -161,7 +161,7 @@ void FrameCryptor::set_packet_trailer_handler(
     chain->AddTransformer(
         ReceiverTransformerChain::Priority::kFrameCryptor,
         e2ee_transformer_);
-    chain->RegisterTransformedFrameCallback(nullptr);  // WebRTC decoder follows
+    // WebRTC will call RegisterTransformedFrameCallback(decoder) on the chain
     receiver_->SetDepacketizerToDecoderFrameTransformer(chain);
   } else if (sender_) {
     // Sender: FrameCryptor runs first, then PacketTrailer
@@ -171,7 +171,7 @@ void FrameCryptor::set_packet_trailer_handler(
     chain->AddTransformer(
         ReceiverTransformerChain::Priority::kPacketTrailer,
         timestamp_transformer);
-    chain->RegisterTransformedFrameCallback(nullptr);  // WebRTC encoder follows
+    // WebRTC will call RegisterTransformedFrameCallback(encoder) on the chain
     sender_->SetEncoderToPacketizerFrameTransformer(chain);
   }
 }

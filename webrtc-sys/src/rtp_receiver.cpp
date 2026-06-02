@@ -92,7 +92,8 @@ void RtpReceiver::InstallEncodedTap(
   tap->AddSink(sink);
   chain->AddTransformer(
       ReceiverTransformerChain::Priority::kEncodedTapPostDecrypt, tap);
-  chain->RegisterTransformedFrameCallback(nullptr);  // WebRTC decoder follows
+  // WebRTC will call RegisterTransformedFrameCallback(decoder) on the chain
+  // when SetDepacketizerToDecoderFrameTransformer is invoked.
 
   // Note: this overwrites any existing transformer chain on the receiver.
   // For proper coexistence with E2EE/packet trailer, the shared
