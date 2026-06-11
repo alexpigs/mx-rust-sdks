@@ -25,7 +25,8 @@ namespace livekit_ffi {
 EncodedVideoBuffer::EncodedVideoBuffer(const uint8_t* data, size_t size)
     : data_(data, data + size) {}
 
-EncodedFrameTapTransformer::EncodedFrameTapTransformer() = default;
+EncodedFrameTapTransformer::EncodedFrameTapTransformer(bool drop_after_tap)
+    : drop_after_tap_(drop_after_tap) {}
 
 void EncodedFrameTapTransformer::AddSink(
     std::shared_ptr<NativeEncodedFrameSink> sink) {
@@ -66,7 +67,7 @@ void EncodedFrameTapTransformer::Transform(
     sink->OnEncodedFrame(info);
   }
 
-  if (callback_) {
+  if (!drop_after_tap_ && callback_) {
     callback_->OnTransformedFrame(std::move(frame));
   }
 }

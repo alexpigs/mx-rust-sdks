@@ -65,7 +65,7 @@ struct EncodedFrameInfo {
 /// Receiver-side transformer that taps encoded frames before the decoder.
 class EncodedFrameTapTransformer : public webrtc::FrameTransformerInterface {
  public:
-  EncodedFrameTapTransformer();
+  explicit EncodedFrameTapTransformer(bool drop_after_tap = false);
   ~EncodedFrameTapTransformer() override = default;
 
   void AddSink(std::shared_ptr<NativeEncodedFrameSink> sink);
@@ -87,6 +87,7 @@ class EncodedFrameTapTransformer : public webrtc::FrameTransformerInterface {
       RTC_GUARDED_BY(mutex_);
   std::vector<std::shared_ptr<NativeEncodedFrameSink>> sinks_
       RTC_GUARDED_BY(mutex_);
+  bool drop_after_tap_ = false;
 };
 
 /// Sink that receives EncodedFrameInfo from the tap.

@@ -223,6 +223,7 @@ message NewEncodedVideoStreamRequest {
   required uint64 track_handle = 1;
   optional uint32 queue_size_frames = 2 [default = 1];
   optional EncodedVideoStreamTapPosition tap_position = 3 [default = POST_DECRYPT];
+  optional bool drop_after_tap = 4 [default = false];
 }
 
 message NewEncodedVideoStreamResponse {

@@ -86,9 +86,11 @@ void RtpReceiver::SetDepacketizerToDecoderFrameTransformer(
 }
 
 void RtpReceiver::InstallEncodedTap(
-    const std::shared_ptr<NativeEncodedFrameSink>& sink) const {
+    const std::shared_ptr<NativeEncodedFrameSink>& sink,
+    bool drop_after_tap) const {
   auto chain = webrtc::make_ref_counted<ReceiverTransformerChain>();
-  auto tap = webrtc::make_ref_counted<EncodedFrameTapTransformer>();
+  auto tap = webrtc::make_ref_counted<EncodedFrameTapTransformer>(
+      drop_after_tap);
   tap->AddSink(sink);
   chain->AddTransformer(
       ReceiverTransformerChain::Priority::kEncodedTapPostDecrypt, tap);

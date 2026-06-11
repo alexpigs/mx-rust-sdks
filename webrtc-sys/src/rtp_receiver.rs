@@ -42,6 +42,7 @@ pub mod ffi {
         fn InstallEncodedTap(
             self: &RtpReceiver,
             sink: &SharedPtr<NativeEncodedFrameSink>,
+            drop_after_tap: bool,
         );
 
         fn track(self: &RtpReceiver) -> SharedPtr<MediaStreamTrack>;
@@ -68,4 +69,3 @@ pub mod ffi {
 pub struct ReceiverContext(pub Box<dyn Any + Send>);
 
 impl_thread_safety!(ffi::RtpReceiver, Send + Sync);
-

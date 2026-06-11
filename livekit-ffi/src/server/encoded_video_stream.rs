@@ -60,6 +60,7 @@ impl FfiEncodedVideoStream {
 
         let rtc_receiver = transceiver.receiver();
         let capacity = request.queue_size_frames.map(|c| c as usize);
+        let drop_after_tap = request.drop_after_tap.unwrap_or(false);
 
         // Query codec BEFORE moving rtc_receiver into the spawned task
         let params = rtc_receiver.parameters();
@@ -82,6 +83,7 @@ impl FfiEncodedVideoStream {
             handle_id,
             rtc_receiver,
             capacity,
+            drop_after_tap,
             self_dropped_rx,
             server.watch_handle_dropped(request.track_handle),
         ));
@@ -123,6 +125,7 @@ impl FfiEncodedVideoStream {
         stream_handle: FfiHandleId,
         rtc_receiver: RtpReceiver,
         capacity: Option<usize>,
+        drop_after_tap: bool,
         mut self_dropped_rx: oneshot::Receiver<()>,
         mut handle_dropped_rx: oneshot::Receiver<()>,
     ) {
@@ -135,7 +138,7 @@ impl FfiEncodedVideoStream {
         let (mut native_stream, sink) = NativeEncodedVideoStream::new(capacity);
 
         // Install the encoded tap on the receiver via CXX bridge
-        sys_receiver.InstallEncodedTap(&sink);  // sink is SharedPtr
+        sys_receiver.InstallEncodedTap(&sink, drop_after_tap);  // sink is SharedPtr
 
         loop {
             tokio::select! {

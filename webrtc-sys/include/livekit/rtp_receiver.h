@@ -71,7 +71,8 @@ class RtpReceiver {
   /// Install an EncodedFrameTapTransformer in a new chain on this receiver.
   /// Returns the tap so it can be cleaned up later.
   void InstallEncodedTap(
-      const std::shared_ptr<NativeEncodedFrameSink>& sink) const;
+      const std::shared_ptr<NativeEncodedFrameSink>& sink,
+      bool drop_after_tap) const;
 
   webrtc::scoped_refptr<webrtc::RtpReceiverInterface> rtc_receiver() const {
     return receiver_;
